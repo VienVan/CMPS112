@@ -1,0 +1,9 @@
+{
+	"type": "sftp",
+	"host": "unix.ucsc.edu",
+	"username": "vhvan",
+	"password": "VienisAwesome!",
+	"port": 22,
+	"remotePath": "/afs/cats.ucsc.edu/users/m/vhvan/CMPS112/asg1",
+	"uploadOnSave": true
+}
