@@ -13,6 +13,8 @@
 ;;    program, which is the executed.  Currently it is only printed.
 ;;
 
+;; TODO: evaluate binary / unary operators
+;; TODO: define let, goto, let, if, fib, pi, e, etc/
 ;; professor wrote these functions
 (define *stderr* (current-error-port))
 
@@ -53,19 +55,69 @@
 (define (put-function! key value)
 		(hash-set! *function-table* key value))
 
-;init function table
+; modify print to take more than 1 arguments
+; TODO handle case when no argument is given to print
+(define (print_ expr . optional)
+	(when (not (null? expr))
+		(display expr)
+		(when (not (null? optional))
+			(display (car optional))
+		)
+		(newline)
+	)
+
+)
+
+; TODO write this function
+(define (let_ var expr)
+	; (when (and (not (null? var)) (not (null? expr)))
+	; 	(let (()))
+	; )
+	(display "vien is awesome")
+	(newline)
+)
+; init function table
 (for-each
 	(lambda (pair)
 			(put-function! (car pair) (cadr pair)))
 	`(
-		(print ,print)
+		(print ,print_)
 		(+ ,+)
+		; (+ , (lambda (x y) (+ x y)))
 		(- ,-)
 		(* ,*)
-		(/ ,/)
-	))
+		(/ ,(lambda (x y) (floor (/ x y))))
+		(let ,let_)
+		(atan ,atan)
+		(cos ,cos)
+		(tan ,tan)
+		(abs ,abs)
+		(^ ,expt)
+		(sin ,sin)
+		(exp ,exp)
+		(log10_2 0.301029995663981195213738894724493026768189881)
+		(log10   ,(lambda (x) (/ (log x) (log 10.0))))
+		(log   ,(lambda (x) (/ (log x) (log 10.0))))
+		(sqrt ,sqrt)
 
-; evaluate line
+	)
+)
+
+; helper functions
+(define list-length
+	(lambda (l)
+		(cond	((null? l) 0)
+		(#t (+ 1 (list-length (cdr l)))))
+	)
+)
+
+(define (get-statement line)
+	; (printf "Length of line: ~a~n" (list-length line))
+	(cond ((eqv? (list-length line) 2) (cdr line))  ;if the line list has 2 elements, Mackey said the statement is the cdr
+		  ((eqv? (list-length line) 3) (cddr line)) ;if line has 3 elements, statement is the cddr
+		  (else line)							;return line number if it's 1
+	)
+)
 
 ; evaluate expression
 ; if number, return number
@@ -73,13 +125,13 @@
 ; if pair, look up car of pair in function table, then apply the eval-expr to the cdr (print string, evaluate operators, etc.)
 ; TODO: evaluate symbol
 (define (eval-expr expr)
-	(cond 	((number? expr) expr)
+	(cond 	((number? expr) (+ expr 0.0))
 			((symbol? expr) expr)
 			((string? expr) expr)
 			((pair? expr)
 				(apply (
-					get-function (caar expr))
-					(map eval-expr (cdar expr))
+					get-function (car expr))
+					(map eval-expr (cdr expr))
 				)
 			)
 			(else #f)
@@ -89,38 +141,21 @@
 ; interpret program by line
 (define (interp-prog program)
 	(when (not (null? program))
-		(let ((second (cdar program)))
-			(when (not (null? second))
-				(eval-expr second)
-				(newline)
+		(let ((line (car program)))
+			; (printf "line length: ~a~n" (list-length line))
+			; (printf "line: ~a~n" line)
+			(let ((statement (get-statement line)))
+				; (printf "statement: ~a~n" statement)
+				; (printf "statement list length: ~a~n" (list-length statement))
+				; (printf "car statement: ~a~n~n" (car statement))
+				(let ((expr (car statement)))
+					(eval-expr expr)
+				)
 			)
 		)
 		(interp-prog (cdr program))
-
 	)
 )
-; label table
-; (define *label-table* (make-hash))
-;
-; (define (label-put list)
-; 	(when (not (null? list))
-; 		(let ((first (cdr list)))
-; 			(when (symbol? first)
-; 				(hash-set! *label-table* first list)
-; 			)
-; 		)
-; 		(label-put (cadr list))
-; 	)
-; )
-; interpret program
-
-; (define (write-program-by-line filename program)
-; 	(printf "==================================================~n")
-; 	(printf "~a: ~s~n" *run-file* filename)
-; 	(printf "==================================================~n")
-; 	(printf "(~n")
-; 	(map (lambda (line) (printf "~s~n" line)) program)
-; 	(printf ")~n"))
 
 (define (main arglist)
 	(if (or (null? arglist) (not (null? (cdr arglist))))
