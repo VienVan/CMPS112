@@ -1,6 +1,6 @@
 #!/Applications/Racket/bin/mzscheme -qr
 ;#!/afs/cats.ucsc.edu/courses/cmps112-wm/usr/racket/bin/mzscheme -qr
-;; $Id: sbi.scm,v 1.3 2016-09-23 18:23:20-07 - - $
+;; 1634132 (vhvan) - Vien Van : sbi.scm
 ;;
 ;; NAME
 ;;    sbi.scm - silly basic interpreter
@@ -12,9 +12,8 @@
 ;;    The file mentioned in argv[1] is read and assumed to be an SBIR
 ;;    program, which is the executed.  Currently it is only printed.
 ;;
-
-;; TODO: evaluate binary / unary operators
 ;; TODO: define let, goto, let, if, fib, pi, e, etc/
+
 ;; professor wrote these functions
 (define *stderr* (current-error-port))
 
@@ -42,7 +41,74 @@
 			 (let ((program (read inputfile)))
 				  (close-input-port inputfile)
 						 program))))
-;; end professor written functions
+
+;;;;;;;;;;;;;;;;;;;; END MACKEY'S FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;; HELPER FUNCTIONS  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; helper functions
+(define list-length
+	(lambda (l)
+		(cond	((null? l) 0)
+		(#t (+ 1 (list-length (cdr l)))))
+	)
+)
+
+; evaluate expression
+; if symbol, return symbol
+; if pair, look up car of pair in function table,
+; then apply the eval-expr to the cdr (print string, evaluate operators, etc.)
+; TODO: evaluate symbol
+(define (eval-expr expr)
+	; (printf "eval-expr exp: ~a~n" expr)
+	(cond 	((number? expr) (+ expr 0.0))
+			((hash-has-key? *variable-table* expr)
+				; (printf "inside hash has key: ~a~n" expr)
+				(get-var expr))
+			((symbol? expr) expr)
+			((string? expr) expr)
+			((pair? expr)
+				(if (eqv? (car expr) `dim)
+					(apply (get-function (car expr)) (cdr expr))
+					(apply (get-function (car expr)) (map eval-expr (cdr expr)) )
+				)
+
+			)
+			(else #f)
+	)
+)
+
+(define (get-statement line)
+	; (printf "Length of line: ~a~n" (list-length line))
+	(cond ((eqv? (list-length line) 2) (cdr line))  ;if the line list has 2 elements, Mackey said the statement is the cdr
+		  ((eqv? (list-length line) 3) (cddr line)) ;if line has 3 elements, statement is the cddr
+		  (else line)							;return line number if it's 1
+	)
+)
+
+;;;;;;;;;;;;;;;;;;;;;; END HELPER FUNCTIONS  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;  VARIABLES  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define *variable-table* (make-hash))
+
+(define (get-var key)
+		(hash-ref *variable-table* key))
+
+(define (put-var! key value)
+		(hash-set! *variable-table* key value))
+
+; init function table
+(for-each
+	(lambda (pair)
+			(put-var! (car pair) (cadr pair)))
+	`(
+		(pi 3.141592653589793238462643383279502884197169399)
+		(e 2.718281828459045235360287471352662497757247093)
+	)
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;  END VARIABLES  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;  FUNCTIONS  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;function table
 (define *function-table* (make-hash))
@@ -55,6 +121,10 @@
 (define (put-function! key value)
 		(hash-set! *function-table* key value))
 
+(define (let_ var . expr)
+	(put-var! var (eval-expr (car expr)))
+)
+
 ; modify print to take more than 1 arguments
 ; TODO handle case when no argument is given to print
 (define (print_ expr . optional)
@@ -65,15 +135,12 @@
 		)
 		(newline)
 	)
-
 )
 
-; TODO write this function
-(define (let_ var expr)
-	; (when (and (not (null? var)) (not (null? expr)))
-	; 	(let (()))
-	; )
-	(display "vien is awesome")
+(define (dim_ expr)
+	(put-var! (car expr) (make-vector (car (cdr expr))))
+	(vector-set! (get-var (car expr)) 5 10)
+	(display (get-var (car expr)))
 	(newline)
 )
 ; init function table
@@ -81,13 +148,13 @@
 	(lambda (pair)
 			(put-function! (car pair) (cadr pair)))
 	`(
+		(let ,let_)
 		(print ,print_)
+		(dim ,dim_)
 		(+ ,+)
-		; (+ , (lambda (x y) (+ x y)))
 		(- ,-)
 		(* ,*)
 		(/ ,(lambda (x y) (floor (/ x y))))
-		(let ,let_)
 		(atan ,atan)
 		(cos ,cos)
 		(tan ,tan)
@@ -103,40 +170,8 @@
 	)
 )
 
-; helper functions
-(define list-length
-	(lambda (l)
-		(cond	((null? l) 0)
-		(#t (+ 1 (list-length (cdr l)))))
-	)
-)
+;;;;;;;;;;;;;;;;;;;;;;;;; END FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define (get-statement line)
-	; (printf "Length of line: ~a~n" (list-length line))
-	(cond ((eqv? (list-length line) 2) (cdr line))  ;if the line list has 2 elements, Mackey said the statement is the cdr
-		  ((eqv? (list-length line) 3) (cddr line)) ;if line has 3 elements, statement is the cddr
-		  (else line)							;return line number if it's 1
-	)
-)
-
-; evaluate expression
-; if number, return number
-; if symbol, return symbol
-; if pair, look up car of pair in function table, then apply the eval-expr to the cdr (print string, evaluate operators, etc.)
-; TODO: evaluate symbol
-(define (eval-expr expr)
-	(cond 	((number? expr) (+ expr 0.0))
-			((symbol? expr) expr)
-			((string? expr) expr)
-			((pair? expr)
-				(apply (
-					get-function (car expr))
-					(map eval-expr (cdr expr))
-				)
-			)
-			(else #f)
-	)
-)
 
 ; interpret program by line
 (define (interp-prog program)
