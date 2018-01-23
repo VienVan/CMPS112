@@ -80,6 +80,11 @@
 						((eqv? (car expr) `let)
 							(let_ (cadr expr) (caddr expr))
 						)
+						((eqv? (car expr) `if)
+							; (printf "if: ~a~n" (cadr expr))
+							; (printf "if: ~a~n" (caddr expr))
+							(if_ (cadr expr) (caddr expr))
+						)
 						((hash-has-key? *function-table* (car expr))
 							(apply (get-function (car expr)) (map eval-expr (cdr expr)) )
 						)
@@ -197,7 +202,9 @@
 )
 
 (define (if_ relop label)
-	
+	(when (eval-expr relop)
+		(goto_ label)
+	)
 )
 ; ; TODO fix this function
 (define (goto_ label)
@@ -214,6 +221,13 @@
 	; )
 
 )
+
+(define (!= x y)
+	(if (eqv? x y)
+		#t
+		#f
+	)
+)
 ; init function table
 (for-each
 	(lambda (pair)
@@ -227,6 +241,12 @@
 		(- 		,-)
 		(* 		,*)
 		(/ 		,(lambda (x y) (floor (/ (+ x 0.0) (+ y 0.0)))))
+		(>		,>)
+		(<		,<)
+		(=		,=)
+		(<>		,!=)
+		(>=		,>=)
+		(<=		,<=)
 		(atan	,atan)
 		(cos 	,cos)
 		(acos 	,acos)
