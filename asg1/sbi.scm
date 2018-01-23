@@ -61,7 +61,7 @@
 			((hash-has-key? *variable-table* expr)
 				(get-var expr))
 			((hash-has-key? *label-table* expr)
-				(eval-expr (get-label expr))
+				(goto_ expr)
 			)
 			((symbol? expr) expr)
 			((string? expr) expr)
@@ -70,7 +70,12 @@
 							(dim_ (cadr expr))
 						)
 						((eqv? (car expr) `goto)
-							(eval-expr (get-label (cadr expr)))
+							; (printf "inside goto: ~a~n" (cadr expr))
+							; (eval-expr (get-label (cadr expr)))
+							; (printf "goto: ~a~n" (cadr expr))
+							; (printf "get-label: ~a~n" (get-label (cadr expr)))
+							; (get-label (cadr expr))
+							(goto_ (cadr expr))
 						)
 						((eqv? (car expr) `let)
 							(let_ (cadr expr) (caddr expr))
@@ -87,11 +92,6 @@
 						)
 						(else #f)
 				)
-
-				; (if (eqv? (car expr) `dim)
-				; 	(apply (get-function (car expr)) (cdr expr))
-				; 	(apply (get-function (car expr)) (map eval-expr (cdr expr)) )
-				; )
 
 			)
 			(else #f)
@@ -119,13 +119,14 @@
 (define (put-label! key value)
 		(hash-set! *label-table* key value))
 
-; (for-each
-; 	(lambda (pair)
-; 			(put-label! (car pair) (cadr pair)))
-; 	`(
-; 		(done , "DONE")
-; 	)
-; )
+(for-each
+	(lambda (pair)
+			(put-label! (car pair) (cadr pair)))
+	`(
+		(done, (newline))
+	)
+)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;  END LABELS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;  VARIABLES  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -195,18 +196,24 @@
 	(put-var! (car array) (make-vector (eval-expr (car (cdr array)))))
 )
 
+(define (if_ relop label)
+	
+)
 ; ; TODO fix this function
-; (define (goto label)
-; 	(if (not (null? label))
-; 		; ((display "found")
-; 		; (printf "label: ~a~n" label)
-; 		(printf "label: ~a~n" (eval-expr (get-label label)))
-; 		; (eval-expr (get-label label))
-; 		; (printf "get-label: ~a~n" (get-label label))
-; 		(display "Label not found")
-; 	)
-;
-; )
+(define (goto_ label)
+	(when (not (null? (get-label label)))
+		(interp-prog (get-label label))
+	)
+	; (if (not (null? label))
+	; 	; ((display "found")
+	; 	; (printf "label: ~a~n" label)
+	; 	(printf "label: ~a~n" (eval-expr (get-label label)))
+	; 	; (eval-expr (get-label label))
+	; 	; (printf "get-label: ~a~n" (get-label label))
+	; 	(display "Label not found")
+	; )
+
+)
 ; init function table
 (for-each
 	(lambda (pair)
@@ -241,23 +248,23 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;; END FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;TODO: store the value of label as the rest of the program
 (define (get-labels program)
 	(when (not (null? program))
-		(let ((line (car program)))
-			(when (eqv? (list-length line) 3)
-				(put-label! (cadr line) (caddr line))
+		(when (not (null? (cdr program)))
+			(let ((line (cdr program)))
+				(when (eqv? (list-length (car line)) 3)
+					(put-label! (cadr (car line)) line)
+				)
 			)
+			(get-labels (cdr program))
 		)
-		(get-labels (cdr program))
 	)
 )
 ; interpret program by line
 (define (interp-prog program)
 	(when (not (null? program))
-		; (get-labels (car program))
 		(let ((line (car program)))
-			; (printf "line length: ~a~n" (list-length line))
-			; (printf "line: ~a~n" line)
 			(let ((statement (get-statement line)))
 				(let ((expr (car statement)))
 					(eval-expr expr)
