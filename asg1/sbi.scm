@@ -189,12 +189,12 @@
 		(when (pair? expr)
 			(display (car expr))
 			(when (not (null? (cdr expr)))
-				(display " ")
-				(display (cadr expr))
+				(print_ (cdr expr))
 			)
 		(newline)
 		)
 	)
+
 )
 
 (define (dim_ array)
