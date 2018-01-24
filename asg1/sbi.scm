@@ -12,8 +12,6 @@
 ;;    The file mentioned in argv[1] is read and assumed to be an SBIR
 ;;    program, which is the executed.  Currently it is only printed.
 ;;
-;; TODO: define goto, if, fib
-;; TODO: ARRAYS (DIM) (12-let)
 ;; TODO: 20-goto
 ;; professor wrote these functions
 (define *stderr* (current-error-port))
@@ -60,31 +58,25 @@
 	(cond 	((number? expr) expr)
 			((hash-has-key? *variable-table* expr)
 				(get-var expr))
-			((hash-has-key? *label-table* expr)
-				(goto_ expr)
-			)
 			((symbol? expr) expr)
 			((string? expr) expr)
 			((pair? expr)
-				(cond 	((eqv? (car expr) `dim)
-							(dim_ (cadr expr))
-						)
-						((eqv? (car expr) `goto)
-							; (printf "inside goto: ~a~n" (cadr expr))
-							; (eval-expr (get-label (cadr expr)))
-							; (printf "goto: ~a~n" (cadr expr))
-							; (printf "get-label: ~a~n" (get-label (cadr expr)))
-							; (get-label (cadr expr))
-							(goto_ (cadr expr))
-						)
-						((eqv? (car expr) `let)
-							(let_ (cadr expr) (caddr expr))
-						)
-						((eqv? (car expr) `if)
-							; (printf "if: ~a~n" (cadr expr))
-							; (printf "if: ~a~n" (caddr expr))
-							(if_ (cadr expr) (caddr expr))
-						)
+				(cond
+						; ((eqv? (car expr) `dim)
+						; 	(dim_ (cadr expr))
+						; )
+						; ((eqv? (car expr) `goto)
+						; 	(goto_ (cadr expr))
+						; )
+						; ((eqv? (car expr) `input)
+						; 	(input_ (cdr expr))
+						; )
+						; ((eqv? (car expr) `let)
+						; 	(let_ (cadr expr) (caddr expr))
+						; )
+						; ((eqv? (car expr) `if)
+						; 	(if_ (cadr expr) (caddr expr))
+						; )
 						((hash-has-key? *function-table* (car expr))
 							(apply (get-function (car expr)) (map eval-expr (cdr expr)) )
 						)
@@ -105,12 +97,26 @@
 
 
 (define (get-statement line)
-	; (printf "Length of line: ~a~n" (list-length line))
-	(cond ((eqv? (list-length line) 2) (cdr line))  ;if the line list has 2 elements, Mackey said the statement is the cdr
-		  ((eqv? (list-length line) 3) (cddr line)) ;if line has 3 elements, statement is the cddr
-		  (else line)							;return line number if it's 1
+	; (printf "line: ~a~n" line)
+	; (printf "pair? line: ~a~n" (pair? line))
+	(when (pair? line)
+		(when (not (null? (cdr line)))
+			; (printf "label? ~a~n" (hash-has-key? *label-table* (car (cdr line))))
+			; (printf "car cdr line: ~a~n" (car (cdr line)))
+			; (when (not (null? (cdar (cdr line))))
+			; 	(printf "cdr cdr line: ~a~n" (cdr (cdr line)))
+			; )
+			; (printf "cdr cdr line: ~a~n~n" (cdr (cdr line)))
+			; (printf "cdr line" (cdr line))
+			(if (hash-has-key? *label-table* (car (cdr line)))
+				(cdr (cdr line))
+				(car (cdr line))
+			)
+		)
 	)
+
 )
+
 
 ;;;;;;;;;;;;;;;;;;;;;; END HELPER FUNCTIONS  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -124,26 +130,22 @@
 (define (put-label! key value)
 		(hash-set! *label-table* key value))
 
-(for-each
-	(lambda (pair)
-			(put-label! (car pair) (cadr pair)))
-	`(
-		(done, (newline))
-	)
-)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;  END LABELS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;  VARIABLES  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; make variable hash table
 (define *variable-table* (make-hash))
 
+; variable table getter
 (define (get-var key)
 		(hash-ref *variable-table* key))
 
+; variable table setter
 (define (put-var! key value)
 		(hash-set! *variable-table* key value))
 
-; init function table
+; init variable table with pi and e
 (for-each
 	(lambda (pair)
 			(put-var! (car pair) (cadr pair)))
@@ -168,10 +170,10 @@
 (define (put-function! key value)
 		(hash-set! *function-table* key value))
 
-; handle the case where it's an Array
+; let takes in memory reference and expr
+; if memory-ref is a pair, it's an array
+; if not, it's a variable
 (define (let_ memory-ref expr)
-
-	; (printf "memory-ref: ~a~n" memory-ref)
 	(if (pair? memory-ref)
 		(vector-set! (get-var (car memory-ref))
 					 (eval-expr (cdr memory-ref))
@@ -179,54 +181,71 @@
 		)
 		(put-var! memory-ref (eval-expr expr))
 	)
+	; (display memory-ref)
+	; (newline)
+	; (printf " memory-ref: ~a~n" (get-var memory-ref))
 
 )
 
 ; modify print to take more than 1 arguments
-; TODO handle case when no argument is given to print
+; recursively print the cdr of print
+; TODO: bug where it prints (expr) when there are two arguments, but normal when print 3
 (define (print_ . expr)
+	(display " ")
 	(when (not (null? expr))
-		(when (pair? expr)
-			(display (car expr))
-			(when (not (null? (cdr expr)))
-				(print_ (cdr expr))
-			)
-		(newline)
+		(when (not (null? (car expr)))
+			(display (eval-expr (caar expr)))
+			(print_ (cdar expr))
 		)
 	)
-
 )
 
+
+; dim (array): create an array in a variable table with dimension given in array pair
+; array -> (var expr)
 (define (dim_ array)
 	(put-var! (car array) (make-vector (eval-expr (car (cdr array)))))
 )
 
+; if takes a boolean relative operation + label
+; if boolean=t, goto label
 (define (if_ relop label)
 	(when (eval-expr relop)
 		(goto_ label)
 	)
 )
-; ; TODO fix this function
-(define (goto_ label)
-	(when (not (null? (get-label label)))
-		(interp-prog (get-label label))
-	)
-	; (if (not (null? label))
-	; 	; ((display "found")
-	; 	; (printf "label: ~a~n" label)
-	; 	(printf "label: ~a~n" (eval-expr (get-label label)))
-	; 	; (eval-expr (get-label label))
-	; 	; (printf "get-label: ~a~n" (get-label label))
-	; 	(display "Label not found")
-	; )
 
+; goto get the prog address stored in label table, run program
+(define (goto_ label)
+	; (printf "label: ~a~n" label)
+	; (printf "get-label: ~a~n" (get-label label))
+	; ; (newline)
+	; ; (when (not (null? (get-label label)))
+		(interp-prog (get-label label))
+	; )
 )
 
+; <> (not equal to)
 (define (!= x y)
 	(if (eqv? x y)
 		#t
 		#f
 	)
+)
+
+; input
+(define (input_ . label)
+	(put-var! `inputcount 0)
+	(printf "inputcount: ~a~n" (get-var `inputcount))
+
+	(let ((input (read)))
+		(put-var! (caar label) input)
+		(put-var! `inputcount (+ (get-var `inputcount) 1))
+	)
+
+	; (read)
+	; (printf "input: ~a~n" label)
+	; (read)
 )
 ; init function table
 (for-each
@@ -234,13 +253,13 @@
 			(put-function! (car pair) (cadr pair)))
 	`(
 		; (let 	,let_)
-		(print 	,print_)
+		; (print 	,print_)
 		; (dim 	,dim_)
 		; (goto	,goto)
 		(+ 		,+)
 		(- 		,-)
 		(* 		,*)
-		(/ 		,(lambda (x y) (floor (/ (+ x 0.0) (+ y 0.0)))))
+		(/ 		,(lambda (x y) (/ (+ x 0.0) (+ y 0.0))))
 		(>		,>)
 		(<		,<)
 		(=		,=)
@@ -267,35 +286,70 @@
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;; END FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (interp-statement statement)
+	; (display "inside interp statement")
+	(when (not (null? statement))
+		(when (pair? statement)
+			; (printf "cdr statement: ~a~n" (cdr statement))
+				(cond 	((eqv? (car statement) `print)
+							(print_ (cdr statement))
+							(newline)
+						)
+						((eqv? (car statement) `dim)
+							(dim_ (cadr statement))
+						)
+						((eqv? (car statement) `goto)
+							; (interp-prog (get-label (cadr statement)))
+							(goto_ (cadr statement))
+						)
+						((eqv? (car statement) `input)
+							(input_ (cdr statement))
+						)
+						((eqv? (car statement) `let)
+							(let_ (cadr statement) (caddr statement))
+						)
+						((eqv? (car statement) `if)
+							(if_ (cadr statement) (caddr statement))
+						)
+						(else #f
+							; (printf "interp-statement false: ~a~n" (car statement))
+							(interp-statement (car statement))
+							)
+				)
 
-;TODO: store the value of label as the rest of the program
+				; (printf "memory-ref" (get-var memory-ref))
+		)
+
+
+	)
+)
+
+; get label store label as key and address of the rest of the program as value
 (define (get-labels program)
 	(when (not (null? program))
-		(when (not (null? (cdr program)))
-			(let ((line (cdr program)))
-				(when (eqv? (list-length (car line)) 3)
-					(put-label! (cadr (car line)) line)
+			(let ((line (car program)))
+				(when (eqv? (list-length line) 2)
+					(when (not (pair? (car (cdr line))))
+						(put-label! (cadr line) program)
+					)
+				)
+				(when (eqv? (list-length line) 3)
+					(put-label! (car (cdr line)) program)
 				)
 			)
 			(get-labels (cdr program))
 		)
-	)
+
 )
-; interpret program by line
+
 (define (interp-prog program)
 	(when (not (null? program))
-		(let ((line (car program)))
-			(let ((statement (get-statement line)))
-				(let ((expr (car statement)))
-					(eval-expr expr)
-				)
-			)
-		)
-		; TODO handle go to statement
+		(interp-statement (get-statement (car program)))
 		(interp-prog (cdr program))
 	)
 )
 
+; driver function
 (define (main arglist)
 	(if (or (null? arglist) (not (null? (cdr arglist))))
 		(usage-exit)
@@ -306,4 +360,6 @@
 	)
 )
 
+
+; run interpreter
 (main (vector->list (current-command-line-arguments)))
