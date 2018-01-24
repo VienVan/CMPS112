@@ -52,9 +52,8 @@
 	)
 )
 
-; TODO: label is printing out in order, but its still printing out the rest of the program
+; evaluate numbers, expressions, and getting array values
 (define (eval-expr expr)
-	; (printf "eval-expr exp: ~a~n" expr)
 	(cond 	((number? expr) (+ expr 0.0))
 			((hash-has-key? *variable-table* expr)
 				(get-var expr))
@@ -67,7 +66,7 @@
 						)
 						((hash-has-key? *variable-table* (car expr))
 							(if (vector? (get-var (car expr)))
-								(vector-ref (get-var (car expr)) (eval-expr (cdr expr)) )
+								(vector-ref (get-var (car expr)) (exact-round(eval-expr (cdr expr))) )
 								(get-var (car expr))
 							)
 
@@ -82,17 +81,8 @@
 
 
 (define (get-statement line)
-	; (printf "line: ~a~n" line)
-	; (printf "pair? line: ~a~n" (pair? line))
 	(when (pair? line)
 		(when (not (null? (cdr line)))
-			; (printf "label? ~a~n" (hash-has-key? *label-table* (car (cdr line))))
-			; (printf "car cdr line: ~a~n" (car (cdr line)))
-			; (when (not (null? (cdar (cdr line))))
-			; 	(printf "cdr cdr line: ~a~n" (cdr (cdr line)))
-			; )
-			; (printf "cdr cdr line: ~a~n~n" (cdr (cdr line)))
-			; (printf "cdr line" (cdr line))
 			(if (hash-has-key? *label-table* (car (cdr line)))
 				(cdr (cdr line))
 				(car (cdr line))
@@ -161,8 +151,8 @@
 (define (let_ memory-ref expr)
 	(if (pair? memory-ref)
 		(vector-set! (get-var (car memory-ref))
-					 (eval-expr (cdr memory-ref))
-					 (eval-expr expr)
+					 (exact-round (eval-expr (cdr memory-ref)))
+					 (exact-round (eval-expr expr))
 		)
 		(put-var! memory-ref (eval-expr expr))
 	)
@@ -189,7 +179,8 @@
 ; dim (array): create an array in a variable table with dimension given in array pair
 ; array -> (var expr)
 (define (dim_ array)
-	(put-var! (car array) (make-vector (eval-expr (car (cdr array)))))
+	(put-var! (car array) (make-vector (exact-round (+ (eval-expr (car (cdr array))) 1)) )
+	)
 )
 
 ; if takes a boolean relative operation + label
@@ -201,13 +192,9 @@
 )
 
 ; goto get the prog address stored in label table, run program
+; this is running an infinity
 (define (goto_ label)
-	(printf "label: ~a~n" label)
-	; (printf "get-label: ~a~n" (get-label label))
-	; ; (newline)
-	; ; (when (not (null? (get-label label)))
 		(interp-prog (get-label label))
-	; )
 )
 
 ; <> (not equal to)
@@ -221,16 +208,26 @@
 ; input
 (define (input_ . label)
 	(put-var! `inputcount 0)
-	(printf "inputcount: ~a~n" (get-var `inputcount))
-
+	; (printf "inputcount: ~a~n" (get-var `inputcount))
+	; (printf "label: ~a~n" label)
+	; (printf "pair? label: ~a~n" (pair? label))
+	; (printf "len label: ~a~n" (list-length label))
+	; (printf "cdar label: ~a~n" (cdar label))
 	(let ((input (read)))
 		(put-var! (caar label) input)
 		(put-var! `inputcount (+ (get-var `inputcount) 1))
+		(when (eof-object? input)
+			(put-var! `inputcount -1)
+			(exit)
+		)
 	)
+	(when (not (null? (cdar label)))
+		(input_ (cdar label))
+	)
+	; (when (not (null? (cadr label)))
+	; 	(printf "labels: ~a~n" (cadr label))
+	; )
 
-	; (read)
-	; (printf "input: ~a~n" label)
-	; (read)
 )
 ; init function table
 (for-each
