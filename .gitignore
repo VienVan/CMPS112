@@ -11,3 +11,5 @@
 *.sbir
 *.txt
 **/pair
+**/.solutions
+*.md
