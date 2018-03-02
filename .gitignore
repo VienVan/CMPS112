@@ -1,11 +1,13 @@
-.score
+**/.score
 .DS_Store
-cmps112-wm
-Examples
-RCS
+**/cmps112-wm
+**/Examples
+**/RCS
 *.pdf
 *.ps
 *.tt
 *.html
 *.json
 *.sbir
+*.txt
+**/pair
