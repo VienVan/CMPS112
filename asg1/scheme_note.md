@@ -143,3 +143,7 @@ how to create label table?
 		(if (null? m) x)
 			( m (+ 1 x) (cdr x))))
 	(m l 0)
+
+interp statement -> interpret if, if checks to see if its true or not
+_ if it's false, calls itself recursively
+-

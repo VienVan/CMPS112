@@ -1,0 +1,9 @@
+NAME: VIEN VAN
+SID: 1634132
+CLASS: CMPS112
+PROFESSOR: WESLEY MACKEY
+ASSIGNMENT: ASG1 - SCHEME
+
+FILES:
+1. sbi.scm - silly basic interpreter written in scheme to interpret .sbir files
+2. README - this file. Includes name, SID, class, asgn, professor, list of files and short descriptino of each.

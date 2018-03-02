@@ -1,0 +1,5 @@
+#!/bin/sh
+name=angelfire-notes-smalltalk
+lynx -dont_wrap_pre \
+     -dump http://www.angelfire.com/tx4/cus/notes/smalltalk.html \
+     >$name.txt

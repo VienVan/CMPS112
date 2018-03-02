@@ -12,11 +12,11 @@
 ;;  11: 	goto letfac
 ;;  12: error:	print "Invalid input."
 ;;  13: 	goto read
-;;  14: 
+;;  14:
 ;;  15: #
 ;;  16: #
 ;;  17: #
-;;  18: 
+;;  18:
 ;;  19: letfac:	let factorial = 1
 ;;  20: 	let itor = 2
 ;;  21: loop:	if itor > x goto prt
@@ -25,11 +25,11 @@
 ;;  24: 	goto loop
 ;;  25: prt:	print "factorial(", x, ") = ", factorial
 ;;  26: 	goto read
-;;  27: 
+;;  27:
 ;;  28: #
 ;;  29: # end of file.
 ;;  30: #
-;;  31: 
+;;  31:
 ;;  32: stop:	print "Program stopping."
 (
 (    1          )

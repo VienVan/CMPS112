@@ -1,0 +1,117 @@
+head	1.5;
+access;
+symbols;
+locks;
+comment	@# @;
+
+
+1.5
+date	2016.11.15.00.31.24;	author -;	state -;
+branches;
+next	1.4;
+
+1.4
+date	2016.11.15.00.30.58;	author -;	state -;
+branches;
+next	1.3;
+
+1.3
+date	2016.11.15.00.30.27;	author -;	state -;
+branches;
+next	1.2;
+
+1.2
+date	2016.11.15.00.28.10;	author -;	state -;
+branches;
+next	1.1;
+
+1.1
+date	2016.11.15.00.27.44;	author -;	state -;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.5
+log
+@-
+@
+text
+@#!/afs/cats.ucsc.edu/courses/cmps112-wm/usr/smalltalk/bin/gst -f
+"$Id: wc.st,v 1.4 2016-11-14 16:30:58-08 - - $"
+
+chars := 0.
+lines := 0.
+
+[stdin atEnd not] whileTrue: [
+   |byte|
+   byte := stdin next.
+   chars := chars + 1.
+   (byte = Character nl) ifTrue: [ lines := lines + 1 ].
+].
+
+stdout << lines << ' ' << chars << Character nl.
+
+@
+
+
+1.4
+log
+@-
+@
+text
+@d2 1
+a2 1
+"$Id: wc.st,v 1.3 2016-11-14 16:30:27-08 - - $"
+d14 1
+a14 1
+stdout << chars << ' ' << lines << Character nl.
+@
+
+
+1.3
+log
+@-
+@
+text
+@d2 1
+a2 1
+"$Id: wc.st,v 1.2 2016-11-14 16:28:10-08 - - $"
+d10 1
+a10 1
+   count := chars + 1.
+@
+
+
+1.2
+log
+@-
+@
+text
+@d2 1
+a2 1
+"$Id: wc.st,v 1.1 2016-11-14 16:27:44-08 - - $"
+d4 2
+a5 1
+count := 0.
+d10 2
+a11 1
+   count := count + 1.
+d14 1
+a14 1
+stdout << count << Character nl.
+@
+
+
+1.1
+log
+@-
+@
+text
+@d2 1
+a2 1
+# $Id$
+@

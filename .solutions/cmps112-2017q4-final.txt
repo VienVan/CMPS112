@@ -1,0 +1,203 @@
+$Id: solution-2017q4-final.txt,v 1.1 2017-12-12 14:49:29-08 - - $
+Solution to cmps112-2017q4-final, page 1
+
+_________________________________________________________________
+Question 1. [2]
+C++        Bjarne Stroustrup's noted contribution to language design.
+COBOL      Business data processing language, designed by Grace Hopper.
+Java       Designed at Sun Microsystems, James Gosling leading.    
+Scheme     Mostly-functional statically-scoped language descended Lisp.
+FORTRAN    Numeric and scientific computation language developed at IBM.
+Simula 67  Simulation language that influenced the design of C++.  
+Ada        DOD language named for Byron's daughter, Countess Lovelace.
+
+_________________________________________________________________
+Question 2. [2]
+|class shape { }                | class stack<item> { };         |
+|class square extends shape { } | stack<Integer> si;             |
+ universal inclusion              universal parametric
+|void foo (double d);           | double sqrt (double);          |
+|void foo (int i);              | n = sqrt (6);                  |
+ ad hoc overloading               ad hoc conversion
+
+_________________________________________________________________
+Question 3. [6]
+Array extend [
+   merge: other [
+      |result si oi ri|
+      result := Array new: self size + other size.
+      si := 1.  oi := 1.  ri := 1.
+      [(si <= self size) & (oi <= other size)]
+      whileTrue: [
+         (self at: si) < (other at: oi)
+         ifTrue: [ result at: ri put: (self at: si).
+                   si := si + 1.
+         ]
+         ifFalse: [ result at: ri put: (other at: oi).
+                    oi := oi + 1.
+         ].
+         ri := ri + 1.
+      ].
+      [si <= self size] whileTrue: [
+         result at: ri put: (self at: si).
+         si := si + 1.
+         ri := ri + 1.
+      ].
+      [oi <= other size] whileTrue: [
+         result at: ri put: (other at: oi).
+         oi := oi + 1.
+         ri := ri + 1.
+      ].
+      ^ result.
+   ]
+]
+
+Solution to cmps112-2017q4-final, page 2
+
+_________________________________________________________________
+Question 4. [3]
+
+let rec merge less ls1 ls2 = match ls1, ls2 with
+    | [], ls2 -> ls2
+    | ls1, [] -> ls1let re
+    | x::xs, y::ys -> 
+      if less x y then x :: merge less xs ls2
+                  else y :: merge less ls1 ys;;
+
+_________________________________________________________________
+Question 5. [3]
+
+(define (merge less ls1 ls2)
+        (cond ((null? ls1) ls2)
+              ((null? ls2) ls1)
+              (else (if (less (car ls1) (car ls2))
+                        (cons (car ls1) (merge less (cdr ls1) ls2))
+                        (cons (car ls2) (merge less ls1 (cdr ls2)))))))
+
+_________________________________________________________________
+Question 6. [4]
+
+Object subclass: Max [
+   Max class >> max: array [
+      array size = 0
+      ifTrue: [ ^ nil ]
+      ifFalse: [
+         |max|
+         max := array at: 1.
+         2 to: array size do: [:i|
+            (array at: i) > max ifTrue: [ max := array at: i ].
+         ].
+         ^ max.
+      ].
+   ]
+].
+
+
+Solution to cmps112-2017q4-final, page 3
+
+_________________________________________________________________
+Question 7(a). [1]
+
+length([],0).
+length([_|T],N) :- length(T,M), N is M + 1.
+
+_________________________________________________________________
+Question 7(b). [1]
+
+sum([],0).
+sum([H|T],N) :- sum(T,M), N is M + H.
+
+_________________________________________________________________
+Question 8. [2]
+
+arrow(a,b).
+arrow(a,c).
+arrow(c,d).
+arrow(c,e).
+path(X,X).
+path(X,Y) :- arrow(X,U), path(U,Y).
+
+_________________________________________________________________
+Question 9(a). [1]
+
+parent(X,Y) :- mother(X,Y).
+parent(X,Y) :- father(X,Y).
+........ any order is OK.
+
+_________________________________________________________________
+Question 9(b). [1]
+
+sister(X,Y) :- parent(P,X), parent(P,Y), female(X).
+........ any ordering of terms to right of :- is OK.
+
+_________________________________________________________________
+Question 10(a). [2]
+
+(define (map2 f l1 l2)
+        (if (or (null? l2) (null? l2)) '()
+            (cons (f (car l1) (car l2))
+                  (map2 f (cdr l1) (cdr l2)))))
+
+_________________________________________________________________
+Question 10(b). [2]
+
+let rec map2 f l1 l2 = match l1, l2 with
+    | [], _ -> []
+    | _, [] -> []
+    | x::xs, y::ys -> f x y :: map2 f xs ys;;
+
+
+Solution to cmps112-2017q4-final, page 4
+
+ 1.    (B) f : int * int -> int
+
+ 2.    (D) f : int -> int -> int
+
+ 3.    (C) inc : int -> int
+
+ 4.    (A) duck typing
+
+ 5.    (A) X = -1.0
+
+ 6.    (A) (cons (car a) (cdr a))
+
+ 7.    (D) unification
+
+ 8.    (D) (map * '(1 2 3 4))
+
+ 9.    (A) strong and dynamic
+
+10.    (D) [1;2;3;4];;
+
+11.    (A) $ O ( 1 ) $
+
+12.    (C) $ O ( n ) $
+
+
+Solution to cmps112-2017q4-final, page 5
+
+ 1.    (A) let f = (*);;
+
+ 2.    (B) recompiling each template separately for each different
+           parameter.
+
+ 3.    (A) compiling all generic parameters as Objects.
+
+ 4.    (C) normal
+
+ 5.    (D) throw
+
+ 6.    (C) nil
+
+ 7.    (C) [1 + 4] value.
+
+ 8.    (D) ;;...
+
+ 9.    (C) a value: 3.
+
+10.    (C) Ada Lovelace
+
+11.    (B) <<
+
+12.    (D) foo(x,y).
+

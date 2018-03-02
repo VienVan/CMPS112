@@ -1,0 +1,8 @@
+#!/bin/sh
+name=angelfire-notes-smalltalk
+enscript -fCourier10 -MLetter -GjC -r -p $name.ps \
+         -b "`pwd | sed 's|^/afs/cats.ucsc.edu/courses/|$$|'`/" \
+         $name.txt
+gv --scale=1.1 $name.ps &
+mkpdf angelfire-notes-smalltalk.ps
+

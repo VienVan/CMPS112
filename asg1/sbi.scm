@@ -1,5 +1,5 @@
-#!/Applications/Racket/bin/mzscheme -qr
-;#!/afs/cats.ucsc.edu/courses/cmps112-wm/usr/racket/bin/mzscheme -qr
+#!/afs/cats.ucsc.edu/courses/cmps112-wm/usr/racket/bin/mzscheme -qr
+;;#!/Applications/Racket/bin/mzscheme -qr
 ;; 1634132 (vhvan) - Vien Van : sbi.scm
 ;;
 ;; NAME
@@ -66,8 +66,11 @@
 						)
 						((hash-has-key? *variable-table* (car expr))
 							(if (vector? (get-var (car expr)))
-								(vector-ref (get-var (car expr)) (exact-round(eval-expr (cdr expr))) )
-								(get-var (car expr))
+
+
+								(vector-ref (get-var (car expr)) (exact-round(eval-expr (cdr expr))))
+								(eval-expr (get-var (car expr)))
+								; (display "not a vector")
 							)
 
 						)
@@ -205,43 +208,44 @@
 	)
 )
 
-; input
-(define (input_ . label)
+(define (input_ memory)
 	(put-var! `inputcount 0)
-	; (printf "inputcount: ~a~n" (get-var `inputcount))
-	; (printf "label: ~a~n" label)
-	; (printf "pair? label: ~a~n" (pair? label))
-	; (printf "len label: ~a~n" (list-length label))
-	; (printf "cdar label: ~a~n" (cdar label))
 	(let ((input (read)))
-		(put-var! (caar label) input)
-		(put-var! `inputcount (+ (get-var `inputcount) 1))
-		(when (eof-object? input)
-			(put-var! `inputcount -1)
-			(exit)
+		(cond 	((number? input)
+					(put-var! (car memory) input)
+					(put-var! `inputcount (+ (get-var `inputcount) 1))
+					; (display "x: ")
+					; (printf "get memory: ~a~n" (get-var (car memory)))
+				)
+				((eof-object? input)
+				 (put-var! `inputcount -1)
+				 )
+				(else (
+					(display "Invalid! Must be a Number")
+					(newline)
+					(input_ memory)
+					))
+
 		)
+
 	)
-	(when (not (null? (cdar label)))
-		(input_ (cdar label))
+	; (printf "inputcount: ~a~n" (get-var `inputcount))
+	(when (not (null? (cdr memory)))
+		(input_ (cdr memory))
 	)
-	; (when (not (null? (cadr label)))
-	; 	(printf "labels: ~a~n" (cadr label))
-	; )
+
 
 )
+
 ; init function table
 (for-each
 	(lambda (pair)
 			(put-function! (car pair) (cadr pair)))
 	`(
-		; (let 	,let_)
-		; (print 	,print_)
-		; (dim 	,dim_)
-		; (goto	,goto)
 		(+ 		,+)
 		(- 		,-)
 		(* 		,*)
-		(/ 		,(lambda (x y) (/ (+ x 0.0) (+ y 0.0))))
+		(/     ,(lambda (x y)  (if (and (eq? x 1) (eq? y 1)) (/ (+ x 0.0) (+ y 0.0)) (/ x y))))
 		(>		,>)
 		(<		,<)
 		(=		,=)
@@ -326,14 +330,19 @@
 
 (define (interp-prog program)
 	(when (not (null? program))
-		(interp-statement (get-statement (car program)))
-		(when (pair? (get-statement (car program)))
-			(when (eqv? (car (get-statement (car program))) `goto)
-				(exit)
-			)
 
+		(interp-statement (get-statement (car program)))
+		(when (pair? (cdr program))
+			(when (pair? (get-statement (car (cdr program))))
+				(when (eqv? (car (get-statement (car (cdr program)))) `goto)
+					(exit)
+				)
+			)
 		)
+		; (printf "car get-statemtn program: ~a~n" (get-statement (car (cdr program))))
+
 		(interp-prog (cdr program))
+
 	)
 )
 

@@ -1,0 +1,195 @@
+$Id: 2017q2-final.txt,v 1.2 2017-06-14 17:37:40-07 - - $
+Answers to cmps112-2017q2-final, page 1
+
+________________________________________________________________________
+Question 1. [1][1]
+Any order is acceptable:
+edge(1,2).
+edge(1,3).
+edge(2,3).
+edge(2,5).
+edge(3,4).
+adjacent(X,Y) :- edge(X,Y).
+adjacent(X,Y) :- edge(Y,X).
+
+________________________________________________________________________
+Question 2. [2]
+fib      int -> int                   (1/2 pt for fib, fib')
+fib'     int -> int -> int -> int
+n        int                          (1/2 pt for each int)
+m        int
+a        int
+b        int
+-        int -> int -> int            (1/2 pt for - and +)
++        int -> int -> int
+=        'a -> 'a -> bool             (1/2 pt for = and <)
+<        'a -> 'a -> bool
+failwith string -> 'a
+
+________________________________________________________________________
+Question 3. [2][1]
+let car list = match list with        (1 pt for car)
+  | [] -> failwith "car []"
+  | x::_ -> x;;
+let cdr list = match list with        (1 pt for cdr)
+  | [] -> failwith "cdr []"
+  | _::xs -> xs;;
+car : 'a list -> 'a = <fun>           (1/2 pt for each type spec)
+cdr : 'a list -> 'a list = <fun>
+
+________________________________________________________________________
+Question 4. [1][1]
+sum([],0).
+sum([H|T],S) :- sum(T,U), S is U + H.
+lengthh([],0).
+lengthh([H|T],L) :- lengthh(T,U), L is U + 1.
+
+________________________________________________________________________
+Question 5. [1]
+[1:-]--->[2:-]--->[|:-]-------------->[|:-]--->[7:o]
+                   V                   V
+                  [3:-]--->[4:o]      [|:-]--->[6:o]
+                                       V
+                                      [5:o]
+
+Answers to cmps112-2017q2-final, page 2
+
+________________________________________________________________________
+Question 6. [2]
+
+C++      |Bjarne Stroustrup's most noted contribution.
+COBOL    |Business data processing language, Grace Hopper.
+LISP     |List processing with Lots of Idiotic Silly Parentheses.
+FORTRAN  |Numeric and scientific computation language developed at IBM.
+Simula 67|Simulation language that influenced the design of C++.
+Pascal   |Small language for structured programming designed by Niklaus Wirth.
+
+________________________________________________________________________
+Question 7. [4]
+
+Array extend [
+   max [
+      (self size = 0)
+      ifTrue: [ ^ nil ]
+      ifFalse: [ |mx|
+         mx := self at: 1.
+         2 to: self size do: [ :i |
+            ((self at: i) > mx) ifTrue: [mx := self at: i].
+         ].
+         ^ mx.
+      ]
+   ]
+].
+
+________________________________________________________________________
+Question 8. [2]
+
+(define (reverse list)
+        (define (rev in out)
+                (if (null? in) out
+                    (rev (cdr in) (cons (car in) out))))
+        (rev list '()))
+
+________________________________________________________________________
+Question 9. [2]
+
+let sum = List.fold_left (+) 0;;
+let length = List.fold_left (fun n _ -> n + 1) 0;;
+
+
+Answers to cmps112-2017q2-final, page 3
+
+________________________________________________________________________
+Question 10. [1]
+
+let twice f x = f (f x);;
+
+________________________________________________________________________
+Question 11. [2]
+
+father( F, C) :- parents( F, _, C).
+mother( M, C) :- parents( _, M, C).
+
+________________________________________________________________________
+Question 12. [1][1][1]
+
+(define (oddlen list)
+        (cond ((null? list) #f)
+              ((null? (cdr list)) #t)
+              (else (oddlen (cddr list)))))
+
+let rec oddlen list = match list with
+    | [] -> false
+    | [_] -> true
+    | x::y::tail -> oddlen tail
+
+oddlen([_]).
+oddlen([H1,H2|T]) :- oddlen(T).
+
+________________________________________________________________________
+Question 13. [2][2]
+
+let rec map f lis = match lis with
+    | [] -> []
+    | x::xs -> f x :: map f xs;;
+
+(define (map f lis)
+        (if (null? lis) '()
+            (cons (f (car lis)) (map f (cdr lis)))))
+
+
+Answers to cmps112-2017q2-final, page 4
+
+ 1.    (C) $ O ( n ) $
+
+ 2.    (A) $ O ( 1 ) $
+
+ 3.    (D) - : int -> int -> int = <fun>
+
+ 4.    (D) vector
+
+ 5.    (C) A structure on the heap, used to hold variables of an outer
+           function when referenced by an inner function.
+
+ 6.    (C) $ O ( n ) $
+
+ 7.    (D) (cddr '(1 2 3 4))
+
+ 8.    (C) [1 + 4] value.
+
+ 9.    (A) ((2*3)+4)*5
+
+10.    (A) strong and dynamic
+
+11.    (A) (apply * '(1 2 3 4))
+
+12.    (C) Edsger W. Dijkstra
+
+
+Answers to cmps112-2017q2-final, page 4
+
+ 1.    (C) monad
+
+ 2.    (D) Smalltalk
+
+ 3.    (C) a+
+
+ 4.    (C) $x = "$foo\n";
+
+ 5.    (B) c()
+
+ 6.    (C) 'a list -> 'a
+
+ 7.    (C) universal inclusion
+
+ 8.    (B) ad hoc overloading
+
+ 9.    (D) universal parametric
+
+10.    (A) ad hoc conversion
+
+11.    (D) throw
+
+12.    (A) Algol 60
+
+
