@@ -13,3 +13,4 @@
 **/pair
 **/.solutions
 *.md
+.gitignore
